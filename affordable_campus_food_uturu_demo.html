@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Affordable Campus Food — Uturu</title>
+<style>
+:root{--green:#176b45;--cream:#fffaf1;--ink:#202820;--muted:#68736b;--line:#e8e9e3}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--cream);color:var(--ink)}
+header{background:var(--green);color:white;padding:22px 16px}
+.wrap{max-width:900px;margin:auto;padding:16px}
+h1{margin:0 0 8px;font-size:25px}header p{margin:0;opacity:.9}
+.notice{background:#fff1d6;border:1px solid #f0d9a6;padding:12px;border-radius:10px;margin:16px 0;font-size:14px}
+h2{font-size:20px;margin:20px 0 12px}
+.categories{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.categories button{border:1px solid var(--line);background:white;border-radius:20px;padding:9px 14px}
+.menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.item{background:white;border:1px solid var(--line);border-radius:14px;padding:14px}
+.item .emoji{font-size:35px}.item h3{margin:8px 0}.price{font-weight:bold;color:var(--green)}
+.item button,.primary{background:var(--green);color:white;border:0;border-radius:9px;padding:10px 14px;margin-top:10px;cursor:pointer}
+section{background:white;border:1px solid var(--line);border-radius:14px;padding:16px;margin:16px 0}
+input,select,textarea{width:100%;padding:11px;border:1px solid #ccd2ca;border-radius:8px;margin:6px 0 12px;font:inherit}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cartline{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.small{font-size:13px;color:var(--muted)}footer{text-align:center;color:var(--muted);padding:24px}
+@media(max-width:520px){.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>Affordable Campus Food</h1><p>Simple, affordable food delivery in Uturu</p></div></header>
+<main class="wrap">
+<div class="notice"><strong>Demo website:</strong> This is a sample storefront only. Orders are saved on this device for demonstration. It is not connected to Supabase, online payments, or delivery riders yet.</div>
+<h2>Our Menu</h2>
+<div class="categories"><button onclick="filterMenu('All')">All</button><button onclick="filterMenu('Rice')">Rice</button><button onclick="filterMenu('Swallow')">Swallow</button><button onclick="filterMenu('Snacks')">Snacks</button><button onclick="filterMenu('Drinks')">Drinks</button></div>
+<div id="menu" class="menu"></div>
+<section><h2>Your Cart</h2><div id="cart"><p class="small">Your cart is empty.</p></div><p><strong>Total: ₦<span id="total">0</span></strong></p></section>
+<section><h2>Delivery details</h2>
+<label>Full name<input id="name" placeholder="Your name"></label>
+<label>Phone number<input id="phone" placeholder="Your phone number" inputmode="tel"></label>
+<label>University / institution in Uturu<input id="school" placeholder="Institution name or Uturu resident"></label>
+<label>Delivery address in Uturu<textarea id="address" rows="2" placeholder="Hostel, lodge, or location"></textarea></label>
+<label>Payment method<select id="payment"><option>Cash on delivery</option><option>Online payment (not active in demo)</option></select></label>
+<button class="primary" onclick="placeOrder()">Place demo order</button>
+<div id="message"></div>
+</section>
+<section><h2>Demo orders on this device</h2><div id="orders"><p class="small">No orders yet.</p></div><button onclick="clearOrders()">Clear demo orders</button></section>
+</main>
+<footer>Affordable Campus Food · Uturu only</footer>
+<script>
+const foods=[
+{id:1,name:"Jollof Rice",cat:"Rice",price:1500,emoji:"🍛"},
+{id:2,name:"Rice & Stew",cat:"Rice",price:1300,emoji:"🍚"},
+{id:3,name:"Beans & Plantain",cat:"Rice",price:1800,emoji:"🫘"},
+{id:4,name:"Garri & Soup",cat:"Swallow",price:1200,emoji:"🥣"},
+{id:5,name:"Pounded Yam & Soup",cat:"Swallow",price:2000,emoji:"🍲"},
+{id:6,name:"Meat Pie",cat:"Snacks",price:700,emoji:"🥟"},
+{id:7,name:"Puff-puff",cat:"Snacks",price:500,emoji:"🍩"},
+{id:8,name:"Bottled Water",cat:"Drinks",price:300,emoji:"💧"}
+];
+let cart={};
+function naira(n){return n.toLocaleString("en-NG")}
+function renderMenu(category="All"){document.getElementById("menu").innerHTML=foods.filter(f=>category==="All"||f.cat===category).map(f=>`<div class="item"><div class="emoji">${f.emoji}</div><h3>${f.name}</h3><div class="price">₦${naira(f.price)}</div><button onclick="add(${f.id})">Add to cart</button></div>`).join("")}
+function filterMenu(c){renderMenu(c)}
+function add(id){cart[id]=(cart[id]||0)+1;renderCart()}
+function change(id,delta){cart[id]=(cart[id]||0)+delta;if(cart[id]<=0)delete cart[id];renderCart()}
+function renderCart(){let entries=Object.entries(cart);let total=0;let box=document.getElementById("cart");if(!entries.length){box.innerHTML='<p class="small">Your cart is empty.</p>'}else{box.innerHTML=entries.map(([id,q])=>{let f=foods.find(x=>x.id==id);total+=f.price*q;return `<div class="cartline"><span>${f.name} × ${q}<br><span class="small">₦${naira(f.price*q)}</span></span><span><button onclick="change(${id},-1)">−</button> <button onclick="change(${id},1)">+</button></span></div>`}).join("")}document.getElementById("total").textContent=naira(total)}
+function placeOrder(){let name=document.getElementById("name").value.trim(),phone=document.getElementById("phone").value.trim(),address=document.getElementById("address").value.trim();if(!name||!phone||!address||!Object.keys(cart).length){document.getElementById("message").innerHTML='<p>Please enter your name, phone, delivery address, and add food to your cart.</p>';return}let order={id:Date.now(),name,phone,school:document.getElementById("school").value,address,payment:document.getElementById("payment").value,items:Object.entries(cart).map(([id,q])=>({name:foods.find(f=>f.id==id).name,q})),total:Object.entries(cart).reduce((s,[id,q])=>s+foods.find(f=>f.id==id).price*q,0)};let orders=JSON.parse(localStorage.getItem("acf_demo_orders")||"[]");orders.unshift(order);localStorage.setItem("acf_demo_orders",JSON.stringify(orders));cart={};renderCart();renderOrders();document.getElementById("message").innerHTML='<p><strong>Demo order saved on this device.</strong> This is not sent to a restaurant or rider.</p>'}
+function renderOrders(){let orders=JSON.parse(localStorage.getItem("acf_demo_orders")||"[]");document.getElementById("orders").innerHTML=orders.length?orders.map(o=>`<div class="cartline"><span>Order #${o.id.toString().slice(-6)}<br><span class="small">${o.name} · ${o.payment}</span><br><span class="small">${o.items.map(i=>i.name+" × "+i.q).join(", ")}</span></span><strong>₦${naira(o.total)}</strong></div>`).join(""):'<p class="small">No orders yet.</p>'}
+function clearOrders(){localStorage.removeItem("acf_demo_orders");renderOrders()}
+renderMenu();renderCart();renderOrders();
+</script>
+</body></html>
